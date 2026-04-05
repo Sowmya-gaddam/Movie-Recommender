@@ -24,6 +24,15 @@ div.stButton > button:hover {
     background-color:#b20710;
 }
 
+div[data-baseweb="select"] {
+    background-color:white !important;
+    border-radius:6px;
+}
+
+div[data-baseweb="select"] > div {
+    color:black !important;
+}
+
 .movie-card {
     text-align:center;
     padding:10px;
@@ -42,7 +51,7 @@ div.stButton > button:hover {
 # -------------------------------
 @st.cache_data
 def load_data():
-    movies = pd.read_csv('movies.csv')
+    movies = pd.read_csv('tmdb_5000_movies.csv')
     movies = movies[['title','overview','genres','keywords','release_date','vote_average']]
     movies['overview'] = movies['overview'].fillna('')
     return movies
@@ -71,7 +80,7 @@ vectors = cv.fit_transform(movies['tags']).toarray()
 similarity = cosine_similarity(vectors)
 
 # -------------------------------
-# API (POSTER + TRAILER)
+# API
 # -------------------------------
 API_KEY = "0862abeccba99a99ea1e939a92cb9ae1"
 
@@ -86,8 +95,8 @@ def fetch_movie_data(movie):
 
             poster_url = "https://image.tmdb.org/t/p/w500/" + poster if poster else None
 
-            # 🎬 Trailer search link
-            trailer_url = f"https://www.youtube.com/results?search_query={movie}+trailer"
+            # 🎬 improved trailer search
+            trailer_url = f"https://www.youtube.com/results?search_query={movie}+official+trailer"
 
             return poster_url, trailer_url
     except:
@@ -130,12 +139,15 @@ def recommend(movie):
 # UI
 # -------------------------------
 st.set_page_config(layout="wide")
+
 st.title("🎬 Movie Recommender")
+st.markdown("### Discover movies you'll love ❤️")
 
 selected_movie = st.selectbox("Choose a movie", movies['title'].values)
 
 if st.button("Recommend"):
-    results = recommend(selected_movie)
+    with st.spinner("Finding best movies for you... 🎬"):
+        results = recommend(selected_movie)
 
     cols = st.columns(5)
 
@@ -144,12 +156,12 @@ if st.button("Recommend"):
             st.markdown(f"""
                 <div class="movie-card">
                     <img src="{movie['poster']}" width="150">
-                    <div class="movie-title">{movie['title']}</div>
-                    <div class="movie-info">⭐ {movie['rating']} | {movie['year']}</div>
+                    <div class="movie-title">{movie['title'][:20]}...</div>
+                    <div class="movie-info">⭐ {movie['rating']} / 10 • {movie['year']}</div>
                 </div>
             """, unsafe_allow_html=True)
 
-            # 🎬 TRAILER BUTTON (NO VIDEO)
+            # 🎬 TRAILER BUTTON
             st.markdown(f"""
                 <a href="{movie['trailer']}" target="_blank">
                     <button style="
