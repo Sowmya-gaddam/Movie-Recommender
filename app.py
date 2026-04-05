@@ -51,7 +51,7 @@ div[data-baseweb="select"] > div {
 # -------------------------------
 @st.cache_data
 def load_data():
-    movies = pd.read_csv('tmdb_5000_movies.csv')
+    movies = pd.read_csv('movies.csv')
     movies = movies[['title','overview','genres','keywords','release_date','vote_average']]
     movies['overview'] = movies['overview'].fillna('')
     return movies
